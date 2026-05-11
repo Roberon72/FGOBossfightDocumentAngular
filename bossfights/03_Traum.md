@@ -1,5 +1,7 @@
 # Realm of the Thanatos Impulse, [Traum]
 
+<img src="images/Traum_title.png" alt=""/>
+
 **Number of Sections: 23**
 
 ## Prologue

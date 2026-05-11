@@ -1,12 +1,30 @@
 [
   {
-    "path": "bossfights/01_Traum.md",
+    "path": "bossfights/01_LB6.md",
+    "icon": "images/LB6_icon.png",
+    "id": "01_LB6",
+    "title": "Lostbelt No.6 [Fae Round Table Domain, Avalon le Fae]\r"
+  },
+  {
+    "path": "bossfights/02_Tunguska.md",
+    "icon": "images/Tunguska_icon.png",
+    "id": "02_Tunguska",
+    "title": "Anti-Primate Biosphere [Tunguska Sanctuary]"
+  },
+  {
+    "path": "bossfights/03_Traum.md",
     "icon": "/images/Traum_icon.png",
-    "id": "01_Traum",
+    "id": "03_Traum",
     "title": "Realm of the Thanatos Impulse, [Traum]"
   },
   {
-    "path": "bossfights/02a_LB7.md",
+    "path": "bossfights/04b_LB7.md",
+    "icon": "images/LB7_conclusion_icon.png",
+    "title": "Lostbelt No.7: Sea of Tree of Emptiness, [ORT Xibalba]",
+    "id": "04b_LB7"
+  },
+  {
+    "path": "bossfights/04_LB7.md",
     "icon": "images/LB7_icon.png",
     "title": "Lostbelt No.7: Golden Sea of Trees, [Nahui Mictlān]",
     "variants": [
@@ -15,12 +33,6 @@
     "variantTransition": [
       "video/LB7_transition.mp4"
     ],
-    "id": "02a_LB7"
-  },
-  {
-    "path": "bossfights/02b_LB7.md",
-    "icon": null,
-    "id": "02b_LB7",
-    "title": "Lostbelt No.7: Sea of Tree of Emptiness, [ORT Xibalba] "
+    "id": "04_LB7"
   }
 ]
