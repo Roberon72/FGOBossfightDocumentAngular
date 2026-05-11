@@ -1,0 +1,62 @@
+@import "@angular/material" mat;
+
+$header-height: var(--mat-toolbar-standard-height);
+
+:host {
+  display: grid;
+  grid-row: $header-height auto;
+}
+
+mat-toolbar {
+  position: fixed;
+  padding-block: 32px;
+  padding-inline: 16px;
+
+  z-index: 10;
+}
+
+.content-container {
+  padding-top: calc($header-height + 16px);
+}
+
+mat-toolbar mat-form-field {
+  flex: 1 0 auto;
+}
+
+.app-loading {
+  display: grid;
+  width: 100dvw;
+  height: 100dvh;
+
+  align-content: center;
+  justify-content: center;
+}
+
+
+
+mat-select.bossfight-select {
+  max-width: fit-content;
+  min-width: 56px;
+
+}
+
+.bossfight-data-render {
+  .bossfight-data-wrapper {
+    $wrapper-height: 32px;
+
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    height: $wrapper-height;
+    gap: 8px;
+
+    img {
+      height: $wrapper-height;
+    }
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}

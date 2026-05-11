@@ -1,0 +1,57 @@
+<div class="layout">
+  <div class="content">
+    @for (block of blocks(); track block) {
+      @switch (block.type) {
+        @case ('heading') {
+          @if (block.level === 1) {
+            <h1 [innerHTML]="block.plainText"></h1>
+          }
+
+          @if (block.level === 2) {
+            <h2 [innerHTML]="block.plainText"></h2>
+          }
+        }
+
+        @case ('thematic-break') {
+          <mat-divider></mat-divider>
+        }
+
+        @case ('paragraph') {
+          <p class="mat-body-1" [innerHTML]="block.html"></p>
+        }
+
+        @case ('inline-html') {
+          <div class="inline-html" [innerHTML]="block.html"></div>
+        }
+
+        @case ('list') {
+          <mat-accordion multi>
+            @for (item of block.items; track item.id) {
+              <mat-expansion-panel [expanded]="this.expandedNodes().has(item.id)"
+                                   (expandedChange)="markArrowExpanded(item.id, $event)"
+                                   class="item-panel">
+                <mat-expansion-panel-header>
+                  <mat-panel-title class="item-panel-title">
+                    <mat-checkbox (click)="$event.stopPropagation()"
+                                  (keydown)="$event.stopPropagation()"
+                                  (change)="markArrowCompleted(item.id, $event.checked)"
+                                  [checked]="completedArrows().has(item.id)"
+                    >
+                    </mat-checkbox>
+                    {{ item.text }}
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+
+                <div class="panel-content">
+                  @for (spoiler of item.spoilers; track spoiler) {
+                    <h5 [innerHTML]="spoiler"></h5>
+                  }
+                </div>
+              </mat-expansion-panel>
+            }
+          </mat-accordion>
+        }
+      }
+    }
+  </div>
+</div>

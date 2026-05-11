@@ -1,0 +1,17 @@
+.content {
+  display: grid;
+  justify-content: center;
+
+  .inline-html {
+    width: fit-content;
+    justify-self: center;
+  }
+
+  h1, h2, h3, h4, h5 {
+    text-align: center;
+  }
+
+  .item-panel-title {
+    gap: 8px;
+  }
+}
