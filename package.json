@@ -7,7 +7,9 @@
     "prebuild": "bun run scripts/create-bossfight-manifest.ts",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "github-build": "ng build --configuration production --base-href '/FGOBossfightDocumentAngular/'",
+    "github-deploy": "bunx angular-cli-ghpages --dir=dist/FGOBossfightDocumentAngular/browser --no-silent"
   },
   "private": true,
   "packageManager": "bun@1.3.13",

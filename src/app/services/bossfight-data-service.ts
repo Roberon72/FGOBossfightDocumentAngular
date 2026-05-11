@@ -51,7 +51,7 @@ function processRawBossfight(
 export class BossfightDataService {
   private readonly _bossfights = httpResource<BossfightRecord[]>(
     () => ({
-      url: '/bossfights/manifest.json',
+      url: 'bossfights/manifest.json',
       reportProgress: true,
     }),
     {
