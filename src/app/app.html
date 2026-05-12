@@ -16,7 +16,7 @@
 
         @for (data of (this.bossfightData() ?? []); track data?.id) {
           <mat-option class="bossfight-data-render" [value]="data.id">
-            <ng-container *ngTemplateOutlet="bossfightOptionContent; context: {$implicit: data}" />
+            <ng-container *ngTemplateOutlet="bossfightOptionContent; context: {$implicit: mergeVariantData(data)}" />
           </mat-option>
         }
       </mat-select>

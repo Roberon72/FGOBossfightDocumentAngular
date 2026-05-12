@@ -6,12 +6,13 @@ import { BossfightDataService, BossfightRecord } from './services/bossfight-data
 import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { JsonPipe, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { BossfightRenderComponent } from './components/bossfight-render-component/bossfight-render-component';
 import { AppColorService } from './services/app-color-service';
+import deepEqualCheck from 'deep-equal-check';
 
-export type Nullable<T> = T | null
+export type Nullable<T> = T | null;
 
 @Component({
   selector: 'app-root',
@@ -25,7 +26,6 @@ export type Nullable<T> = T | null
     MatSelectTrigger,
     NgTemplateOutlet,
     BossfightRenderComponent,
-    JsonPipe,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -68,8 +68,7 @@ export class App {
     source: this.bossfightData,
     computation: (bossfightData, previous) => {
       const { selectedDocument } = this.userData();
-      if (!bossfightData?.length)
-        return selectedDocument
+      if (!bossfightData?.length) return selectedDocument;
 
       const bossfightIds = new Set(bossfightData?.map(({ id }) => id));
       const currentSelected = previous?.value ?? selectedDocument;
@@ -94,15 +93,29 @@ export class App {
     }
   });
 
-  protected selectedDocumentRecord = computed(() => {
-    if (!this.bossfightDataLoading() && !!this.bossfightData()) {
-      return this.bossfightData()?.find(({ id }) => id == this.selectedBossfight());
-    }
+  protected selectedDocumentRecord = computed(
+    () => {
+      if (!this.bossfightDataLoading() && !!this.bossfightData()) {
+        const bossfight = this.bossfightData()?.find(({ id }) => id == this.selectedBossfight());
+        if (!bossfight) return undefined;
 
-    return undefined;
-  });
+        return this.mergeVariantData(bossfight);
+      }
+
+      return undefined;
+    },
+    { equal: deepEqualCheck },
+  );
   private updateAppBackground = effect(() => {
     const baseColor = this.selectedDocumentRecord()?.baseColor ?? null;
     this.appColorService.updateColor(baseColor);
-  })
+  });
+
+  protected mergeVariantData(bossfightRecord: BossfightRecord): BossfightRecord {
+    const { displayVariant } = this.userData().documentStates[bossfightRecord.id] ?? {};
+    if (displayVariant && !!bossfightRecord.variant) {
+      return { ...bossfightRecord.variant, id: bossfightRecord.id };
+    }
+    return bossfightRecord;
+  }
 }
