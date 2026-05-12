@@ -1,16 +1,20 @@
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
+import { Nullable } from '../app';
 
 export interface BossfightMetadata {
   id: string;
   path: string;
   title: string;
   icon?: string | null;
-  variants?: string[];
-  variantTransitions?: string[];
+  baseColor?: string;
+  variant?: string;
+  variantTransition?: string;
+  isVariant?: true;
 }
-export type BossfightRecord = Omit<BossfightMetadata, 'variants'> & {
-  variants?: BossfightRecord[];
+export type BossfightRecord = Omit<BossfightMetadata, 'variant'> & {
+  variant?: BossfightRecord;
+  isVariant?: true
 };
 export type BossfightManifest = Array<BossfightMetadata>;
 function isManifest(elem: any): elem is BossfightManifest {
@@ -22,34 +26,45 @@ function isManifest(elem: any): elem is BossfightManifest {
 
 function processRawBossfight(
   bossfightMetadata: BossfightMetadata,
-  _: number,
-  bossfights: Array<BossfightMetadata>,
+  rawBossfights: Array<BossfightMetadata>,
 ): BossfightRecord {
-  const result = structuredClone(bossfightMetadata);
-  const variants = result.variants
-    ?.map((variantId) => {
-      const variantIdx = bossfights.findIndex(({ id }) => id === variantId);
-      if (variantIdx === -1) {
-        console.warn(`Document refers to non-existent or already claimed variant: ${result.id} => ${variantId}`)
+  const metadata = structuredClone(bossfightMetadata);
+  const variantId = metadata.variant;
+  const variant = (() => {
+    if (variantId) {
+      const variantMetadataIdx = rawBossfights
+        .filter((e) => !!e)
+        .findIndex(({ id }) => id === variantId);
+
+      if (variantMetadataIdx === -1) {
+        console.warn(
+          `Document refers to non-existent or already claimed variant: ${metadata.id} => ${variantId}`,
+        );
         return null;
       }
+      const variant = rawBossfights[variantMetadataIdx];
+      return processRawBossfight(variant, rawBossfights);
+    }
 
-      const variantMetadata = bossfights.splice(variantIdx, 1)[0];
-      return processRawBossfight(variantMetadata, -1, bossfights);
-    })
-    ?.filter((variant) => !!variant);
+    return null;
+  })();
 
-  return {
-    ...result,
-    variants,
-  };
+  const result: BossfightRecord = metadata as BossfightRecord;
+
+  if (!!variant) {
+    result.variant = variant;
+  } else {
+    delete result.variant;
+  }
+
+  return result;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class BossfightDataService {
-  private readonly _bossfights = httpResource<BossfightRecord[]>(
+  private readonly _bossfights = httpResource<BossfightRecord[] | null>(
     () => ({
       url: 'bossfights/manifest.json',
       reportProgress: true,
@@ -59,8 +74,11 @@ export class BossfightDataService {
         if (!isManifest(raw)) throw Error('Manifest is not properly formatted');
 
         const bossfights = structuredClone(raw);
-        return bossfights.map(processRawBossfight).filter(Boolean);
+        return bossfights
+          .filter(e => !!e && !e.isVariant)
+          .map((bossfight) => processRawBossfight(bossfight, bossfights));
       },
+      defaultValue: null
     },
   );
   private readonly _rawArray: WritableSignal<BossfightMetadata[] | undefined> = signal(undefined);

@@ -1,14 +1,17 @@
 import { Component, computed, effect, inject, linkedSignal, signal } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatFormField, MatOption, MatSelect, MatSelectTrigger } from '@angular/material/select';
-import { UserDataService } from './services/user-data-service';
-import { BossfightDataService } from './services/bossfight-data-service';
+import { UserData, UserDataService } from './services/user-data-service';
+import { BossfightDataService, BossfightRecord } from './services/bossfight-data-service';
 import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { NgTemplateOutlet } from '@angular/common';
+import { JsonPipe, NgTemplateOutlet } from '@angular/common';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { BossfightRenderComponent } from './components/bossfight-render-component/bossfight-render-component';
+import { AppColorService } from './services/app-color-service';
+
+export type Nullable<T> = T | null
 
 @Component({
   selector: 'app-root',
@@ -21,7 +24,8 @@ import { BossfightRenderComponent } from './components/bossfight-render-componen
     MatProgressSpinner,
     MatSelectTrigger,
     NgTemplateOutlet,
-    BossfightRenderComponent
+    BossfightRenderComponent,
+    JsonPipe,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -29,6 +33,7 @@ import { BossfightRenderComponent } from './components/bossfight-render-componen
 export class App {
   private bossfightDataService = inject(BossfightDataService);
   private userDataService = inject(UserDataService);
+  private appColorService = inject(AppColorService);
   private _snackBar = inject(MatSnackBar);
   private snackBarRef = signal<MatSnackBarRef<any> | undefined>(undefined);
 
@@ -59,21 +64,28 @@ export class App {
     },
   });
 
-  protected selectedBossfight = signal<string>('');
-  private initSelectedBossfight = effect(() => {
-    const data = this.userData();
-    if (data?.selectedDocument) {
-      this.selectedBossfight.set(data.selectedDocument);
-    }
-    // Cleanup: only run once
-    setTimeout(() => this.initSelectedBossfight.destroy());
+  protected selectedBossfight = linkedSignal<Nullable<BossfightRecord[]>, string>({
+    source: this.bossfightData,
+    computation: (bossfightData, previous) => {
+      const { selectedDocument } = this.userData();
+      if (!bossfightData?.length)
+        return selectedDocument
+
+      const bossfightIds = new Set(bossfightData?.map(({ id }) => id));
+      const currentSelected = previous?.value ?? selectedDocument;
+      if (bossfightIds.has(currentSelected)) {
+        return currentSelected;
+      } else {
+        return bossfightData?.at(-1)?.id ?? '';
+      }
+    },
   });
 
   private onSelectionChange = effect(() => {
     const selectedId = this.selectedBossfight();
-    const currentData = this.userData();
+    const currentData: UserData = this.userData() ?? { selectedDocument: '' };
 
-    if (selectedId && currentData && currentData.selectedDocument !== selectedId) {
+    if (selectedId && currentData?.selectedDocument !== selectedId) {
       console.log('Updating user data with selected bossfight:', selectedId);
       this.userDataService.saveUserData({
         ...currentData,
@@ -89,4 +101,8 @@ export class App {
 
     return undefined;
   });
+  private updateAppBackground = effect(() => {
+    const baseColor = this.selectedDocumentRecord()?.baseColor ?? null;
+    this.appColorService.updateColor(baseColor);
+  })
 }

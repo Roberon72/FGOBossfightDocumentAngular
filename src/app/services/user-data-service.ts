@@ -1,9 +1,8 @@
 import { Injectable, signal, WritableSignal } from '@angular/core';
 
-//TODO: Move
 export type UserData = {
   selectedDocument: string;
-  documentStates?: Record<string, DocumentState>;
+  documentStates: Record<string, DocumentState>;
 };
 
 export type DocumentState = {
@@ -22,32 +21,35 @@ function isUserData(obj: any): obj is UserData {
   return !!obj && Object.hasOwn(obj, "selectedDocument")
 }
 
+const DEFAULT_USER_DATA: UserData = { selectedDocument: '', documentStates: {} }
+
+
+
 @Injectable({
   providedIn: 'root',
 })
 export class UserDataService {
-  private _userData: WritableSignal<UserData | null> = signal(this.loadUserData())
+  private _userData: WritableSignal<UserData> = signal(this.loadUserData())
   public userData = this._userData.asReadonly()
 
-  private loadUserData(): UserData | null {
+  private loadUserData(): UserData {
     const savedData = localStorage.getItem("userData")
-    if (!savedData) return null;
+    if (!savedData) return structuredClone(DEFAULT_USER_DATA);
 
     try {
       const parsed = JSON.parse(savedData);
       if (isUserData(parsed)) return parsed
     } catch(_) {}
 
-    return null;
+    return structuredClone(DEFAULT_USER_DATA);
   }
 
   public saveUserData(userData?: UserData) {
     if (!userData) {
-      localStorage.removeItem("userData")
+      localStorage.setItem("userData", JSON.stringify(DEFAULT_USER_DATA))
       return
     }
 
-    //TODO: check maybe?
     localStorage.setItem("userData", JSON.stringify(userData))
     this._userData.set(userData)
   }

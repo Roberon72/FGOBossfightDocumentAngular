@@ -6,7 +6,7 @@
 } @else {
   <mat-toolbar class="mat-on-surface-variant">
     <mat-form-field appearance="outline">
-      <mat-select [(ngModel)]="this.selectedBossfight">
+      <mat-select [(ngModel)]="this.selectedBossfight" [value]="this.selectedBossfight() ?? this.bossfightData()?.at(-1)?.id ?? ''">
         <mat-select-trigger class="bossfight-data-render">
           @let bossfight = this.selectedDocumentRecord();
           @if (!!bossfight) {
@@ -24,6 +24,8 @@
 
     <div class="spacer"></div>
   </mat-toolbar>
+
+  <pre>{{this.selectedBossfight() ?? this.bossfightData()?.at(-1)?.id ?? '' | json}}</pre>
   <!--<shiki-render-component [code]="this.bossfightData() | json" lang="json"/>-->
   <!--<shiki-render-component [code]="this.userData() | json" lang="json"/>-->
 

@@ -32,18 +32,18 @@ export class BossfightRenderComponent {
   protected bossfightMarkdown = resource({
     params: () => ({ documentUrl: this.bossfightDocumentRecord().path }),
     loader: ({ params: { documentUrl } }) => fetch(documentUrl).then((r) => r.text()),
-    defaultValue: '# Loading',
+    defaultValue: '# Loading...',
   });
 
   protected blocks = computed(() =>
     this.bossfightDocumentProcessor.parseMarkdownDocument(
-      this.bossfightMarkdown.value() ?? '# Loading',
+      this.bossfightMarkdown.value(),
     ),
   );
   protected expandedNodes = linkedSignal({
     source: this.userData,
     computation: (source) => {
-      const documentStates = source?.documentStates ?? {};
+      const documentStates = source.documentStates ?? {};
       const documentReadState = documentStates[this.bossfightDocumentRecord().id] ?? {};
       const currentDocumentArrows = documentReadState.readStates ?? {};
 
@@ -61,7 +61,7 @@ export class BossfightRenderComponent {
   protected completedArrows = linkedSignal({
     source: this.userData,
     computation: (source) => {
-      const documentStates = source?.documentStates ?? {};
+      const documentStates = source.documentStates ?? {};
       const documentReadState = documentStates[this.bossfightDocumentRecord().id] ?? {};
       const currentDocumentArrows = documentReadState.readStates ?? {};
 
@@ -82,10 +82,7 @@ export class BossfightRenderComponent {
     const documentId = this.bossfightDocumentRecord().id;
 
     //Ugly as all hell
-    const userData = structuredClone(this.userData()) ?? {
-      selectedDocument: documentId,
-      documentStates: { [documentId]: {  } }
-    };
+    const userData = structuredClone(this.userData());
     const readState: Record<string, ReadState> = {};
 
     const completeAndRevealed = this.expandedNodes().intersection(this.completedArrows());
@@ -104,6 +101,8 @@ export class BossfightRenderComponent {
       readState[arrowId] = { arrowCompleted: false, spoilerRevealed: true };
     });
 
+    //TODO: Low-key I might import lodash just for this...
+    // Alternatively, is there a deep-merge in vanilla JS?
     userData.documentStates ??= {}
     userData.documentStates[documentId] ??= {};
     userData.documentStates[documentId].readStates ??= {};

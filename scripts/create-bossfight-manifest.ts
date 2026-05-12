@@ -15,7 +15,7 @@ const markdownFiles = readdirSync(dir)
     const frontMatter = matter(fileContent);
     const { data: metadata, content } = frontMatter!;
 
-    metadata['id'] = file.split('\.')[0];
+    if (!metadata['id']) throw new Error(`Document missing id: ${rawPath}`);
 
     if (!!metadata['variants'] && !Array.isArray(metadata['variants'])) {
       metadata['variants'] = [metadata['variants']];
