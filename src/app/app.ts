@@ -1,4 +1,13 @@
-import { Component, computed, effect, inject, linkedSignal, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  linkedSignal,
+  signal,
+  TemplateRef,
+  viewChild,
+} from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatFormField, MatOption, MatSelect, MatSelectTrigger } from '@angular/material/select';
 import { UserData, UserDataService } from './services/user-data-service';
@@ -11,11 +20,15 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { BossfightRenderComponent } from './components/bossfight-render-component/bossfight-render-component';
 import { AppColorService } from './services/app-color-service';
 import deepEqualCheck from 'deep-equal-check';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 export type Nullable<T> = T | null;
 
 @Component({
   selector: 'app-root',
+  host: {
+    '(document:keydown)': 'listenForTransitionSignal($event)',
+  },
   imports: [
     MatToolbar,
     MatSelect,
@@ -35,7 +48,11 @@ export class App {
   private userDataService = inject(UserDataService);
   private appColorService = inject(AppColorService);
   private _snackBar = inject(MatSnackBar);
-  private snackBarRef = signal<MatSnackBarRef<any> | undefined>(undefined);
+  private _dialog = inject(MatDialog);
+  private transitionPlayerTemplate = viewChild.required<TemplateRef<any>>('transitionPlayer');
+
+  private dialogRef = signal<Nullable<MatDialogRef<any>>>(null);
+  private snackBarRef = signal<Nullable<MatSnackBarRef<any>>>(null);
 
   protected userData = this.userDataService.userData;
   protected bossfightDataLoading = this.bossfightDataService.isLoading;
@@ -50,8 +67,13 @@ export class App {
       this._snackBar.dismiss();
     }
   });
+  private dialogActionSubscription = linkedSignal({
+    source: this.dialogRef,
+    computation: (source, previous) => {},
+  });
+
   private snackBarActionSubscription = linkedSignal<
-    MatSnackBarRef<any> | undefined,
+    Nullable<MatSnackBarRef<any>>,
     Subscription | undefined
   >({
     source: this.snackBarRef,
@@ -117,5 +139,54 @@ export class App {
       return { ...bossfightRecord.variant, id: bossfightRecord.id };
     }
     return bossfightRecord;
+  }
+
+  //FIXME: Horrible code
+  protected listenForTransitionSignal(event: KeyboardEvent) {
+    const { key, ctrlKey, shiftKey } = event;
+    if (ctrlKey && shiftKey && key === 'L') {
+      const userData = structuredClone(this.userData()),
+        documentState = userData.documentStates[this.selectedBossfight()] ?? {},
+        { displayVariant = false, transitionPlayed = false } = documentState,
+        newState = structuredClone(documentState),
+        documentRecord = this.selectedDocumentRecord();
+
+      newState.displayVariant = !displayVariant;
+
+      if (!displayVariant) {
+        if (newState.displayVariant && !transitionPlayed && !!documentRecord?.variantTransition) {
+          if (!!this.dialogRef()) return;
+
+          const dialogRef = this._dialog.open(this.transitionPlayerTemplate(), {
+            data: documentRecord.variantTransition,
+            height: '100dvh',
+            width: '100dvw',
+            minHeight: '100dvh',
+            minWidth: '100dvw',
+            maxWidth: '100dvw',
+            maxHeight: '100dvh',
+            closePredicate: (result) => result === 'transitionEnd',
+          });
+
+          dialogRef.afterClosed().subscribe((result) => {
+            newState.transitionPlayed = true;
+            userData.documentStates[this.selectedBossfight()] = newState;
+            this.userDataService.saveUserData(userData);
+          });
+
+          this.dialogRef.set(dialogRef);
+        } else {
+          userData.documentStates[this.selectedBossfight()] = newState;
+          this.userDataService.saveUserData(userData);
+        }
+      } else {
+        userData.documentStates[this.selectedBossfight()] = newState;
+        this.userDataService.saveUserData(userData);
+      }
+    }
+  }
+
+  transitionEnded() {
+    this.dialogRef()?.close('transitionEnd');
   }
 }

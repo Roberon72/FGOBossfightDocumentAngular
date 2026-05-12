@@ -42,3 +42,7 @@
     {{ data.title }}
   </span>
 </ng-template>
+
+<ng-template #transitionPlayer let-transitionUrl>
+  <video [src]="transitionUrl" (ended)="transitionEnded()" style="height: 100dvh; width: 100dvw" autoplay></video>
+</ng-template>

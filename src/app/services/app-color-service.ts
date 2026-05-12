@@ -1,5 +1,11 @@
 import { computed, DOCUMENT, effect, inject, Injectable, signal } from '@angular/core';
-import { argbFromHex, DynamicScheme, Hct, hexFromArgb, Variant } from '@material/material-color-utilities';
+import {
+  argbFromHex,
+  DynamicScheme,
+  Hct,
+  hexFromArgb,
+  Variant,
+} from '@material/material-color-utilities';
 import { Nullable } from '../app';
 
 const DEFAULT_SCHEME_OPTIONS = {
@@ -41,13 +47,12 @@ export class AppColorService {
       isDark: true,
     } as any); //They don't export DynamicSchemeOptions so this has to be any...
 
-    console.log(lightScheme, darkScheme)
     const cssContent = this.assembleCSSContent(lightScheme, darkScheme);
     this.stylesheet.replaceSync(cssContent);
   });
 
   constructor() {
-    document.adoptedStyleSheets.push(this.stylesheet);
+    this.appDocument.adoptedStyleSheets.push(this.stylesheet);
   }
 
   //FIXME: Should be a util but it's not used anywhere else...
@@ -56,16 +61,21 @@ export class AppColorService {
   }
 
   private assembleCSSContent(lightScheme: DynamicScheme, darkScheme: DynamicScheme) {
-    const mainColorMap =
-      Object.entries(DynamicSchemeProps).reduce((acc, [key, descriptor]) => {
-        const { get: getter, set = undefined, writable = false } = descriptor
+    const mainColorMap = Object.entries(DynamicSchemeProps).reduce(
+      (acc, [key, descriptor]) => {
+        const { get: getter, set = undefined, writable = false } = descriptor;
         if (!!getter) {
-          acc[`--mat-sys-${this.camelToKebab(key)}`] = `light-dark(${hexFromArgb(getter.apply(lightScheme))}, ${hexFromArgb(getter.apply(darkScheme))})`;
+          acc[`--mat-sys-${this.camelToKebab(key)}`] =
+            `light-dark(${hexFromArgb(getter.apply(lightScheme))}, ${hexFromArgb(getter.apply(darkScheme))})`;
         }
-        return acc
-      }, {} as Record<string, string>)
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 
-    return `:root { ${Object.entries(mainColorMap).map(([key, value]) => `${key}: ${value};`).join('\n')} }`
+    return `:root { ${Object.entries(mainColorMap)
+      .map(([key, value]) => `${key}: ${value};`)
+      .join('\n')} }`;
   }
 
   public updateColor(hexString: string | null) {
