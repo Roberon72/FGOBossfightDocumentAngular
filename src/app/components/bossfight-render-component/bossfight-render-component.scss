@@ -15,4 +15,20 @@
   .item-panel-title {
     gap: 8px;
   }
+
+  .panel-content {
+    background-color: var(--mat-sys-surface-container);
+    color: var(--mat-sys-on-surface-variant);
+    border-radius: var(--mat-sys-corner-small);
+
+    h3 {
+      padding-block: 1em;
+      margin-block: 0;
+    }
+
+    h5 {
+      padding-block: 1.67em;
+      margin-block: 0;
+    }
+  }
 }

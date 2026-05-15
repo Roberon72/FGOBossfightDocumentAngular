@@ -53,6 +53,55 @@ body {
   flex: 1 1 auto;
 }
 
+@each $color in (primary, secondary, tertiary, error) {
+  .mat-#{$color} {
+    @include mat.toolbar-overrides((
+      container-background-color: var(--mat-sys-#{$color}),
+      container-text-color: var(--mat-sys-on-#{$color})
+    ));
+  }
+
+  .mat-#{$color}-container {
+    @include mat.toolbar-overrides((
+      container-background-color: var(--mat-sys-#{$color}-container),
+      container-text-color: var(--mat-sys-on-#{$color}-container)
+    ));
+
+    @include mat.form-field-overrides((
+      outlined-input-text-color: var(--mat-sys-on-#{$color}-container),
+      outlined-label-text-color: var(--mat-sys-on-#{$color}-container),
+      outlined-hover-label-text-color: var(--mat-sys-on-#{$color}-container),
+      outlined-focus-label-text-color: var(--mat-sys-on-#{$color}-container),
+      outlined-input-text-placeholder-color: color-mix(in srgb, var(--mat-sys-on-#{$color}-container) 70%, transparent),
+
+      outlined-caret-color: var(--mat-sys-on-#{$color}-container),
+      outlined-outline-color: var(--mat-sys-on-#{$color}-container),
+      outlined-hover-outline-color: var(--mat-sys-on-#{$color}-container),
+      outlined-focus-outline-color: var(--mat-sys-on-#{$color}-container),
+    ));
+
+    @include mat.select-overrides((
+      panel-background-color: var(--mat-sys-#{$color}-container),
+      enabled-trigger-text-color: var(--mat-sys-on-#{$color}-container),
+      disabled-trigger-text-color: color-mix(in srgb, var(--mat-sys-on-#{$color}-container) 38%, transparent),
+
+      enabled-arrow-color: var(--mat-sys-on-#{$color}-container),
+      focused-arrow-color: var(--mat-sys-on-#{$color}-container),
+      disabled-arrow-color: color-mix(in srgb, var(--mat-sys-on-#{$color}-container) 38%, transparent),
+    ));
+
+    @include mat.option-overrides((
+      label-text-color: var(--mat-sys-on-#{$color}-container),
+
+      hover-state-layer-color: color-mix(in srgb, var(--mat-sys-on-#{$color}-container) 8%, transparent),
+      focus-state-layer-color: color-mix(in srgb, var(--mat-sys-on-#{$color}-container) 12%, transparent),
+
+      selected-state-layer-color: color-mix(in srgb, var(--mat-sys-on-#{$color}-container) 16%, transparent),
+      selected-state-label-text-color: var(--mat-sys-on-#{$color}-container),
+    ))
+  }
+}
+
 .mat-on-surface-variant {
   @include mat.toolbar-overrides((
     container-background-color: var(--mat-sys-surface-container-highest),
