@@ -66,8 +66,13 @@ function processRawBossfight(
 export class BossfightDataService {
   private readonly _bossfights = httpResource<BossfightRecord[] | null>(
     () => ({
-      url: 'bossfights/manifest.json',
+      url: 'bossfights/manifest.json?' + new Date().getTime(),
       reportProgress: true,
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+        Expires: 'Sat, 01 Jan 2000 00:00:00 GMT',
+      },
     }),
     {
       parse: (raw) => {
