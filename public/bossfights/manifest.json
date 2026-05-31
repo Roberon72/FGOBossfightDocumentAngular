@@ -4,7 +4,7 @@
     "id": "LB6",
     "icon": "images/LB6_icon.png",
     "baseColor": "#D09C40",
-    "title": "Lostbelt No.6 [Fae Round Table Domain, Avalon le Fae]\r"
+    "title": "Lostbelt No.6: Fae Round Table Domain, [Avalon le Fae]\r"
   },
   {
     "path": "bossfights/02_Tunguska.md",
@@ -36,5 +36,20 @@
     "baseColor": "#BF0000",
     "title": "Lostbelt No.7: Sea of Tree of Emptiness, [ORT Xibalba]",
     "isVariant": true
+  },
+  {
+    "path": "bossfights/05_OC1.md",
+    "id": "OC1",
+    "icon": "images/OC1_icon.png",
+    "title": "Zero Compass Inner Domain, [Paper Moon]",
+    "baseColor": "#8AAFF1"
+  },
+  {
+    "path": "bossfights/06_OC2.md",
+    "id": "OC2",
+    "icon": "images/OC2_icon.png",
+    "title": "The Inescapable Gehenna, [Id]",
+    "baseColor": "#D58D82",
+    "inverted": true
   }
 ]

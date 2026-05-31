@@ -129,8 +129,10 @@ export class App {
     { equal: deepEqualCheck },
   );
   private updateAppBackground = effect(() => {
-    const baseColor = this.selectedDocumentRecord()?.baseColor ?? null;
-    this.appColorService.updateColor(baseColor);
+    const { baseColor: hexColor = null, inverted = false } = this.selectedDocumentRecord() ?? {
+      inverted: false,
+    };
+    this.appColorService.updateTheme({ hexColor, inverted });
   });
 
   protected mergeVariantData(bossfightRecord: BossfightRecord): BossfightRecord {

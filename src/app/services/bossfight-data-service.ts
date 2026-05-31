@@ -1,6 +1,5 @@
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
-import { Nullable } from '../app';
 
 export interface BossfightMetadata {
   id: string;
@@ -8,13 +7,14 @@ export interface BossfightMetadata {
   title: string;
   icon?: string | null;
   baseColor?: string;
+  inverted?: boolean;
   variant?: string;
   variantTransition?: string;
   isVariant?: true;
 }
 export type BossfightRecord = Omit<BossfightMetadata, 'variant'> & {
   variant?: BossfightRecord;
-  isVariant?: true
+  isVariant?: true;
 };
 export type BossfightManifest = Array<BossfightMetadata>;
 function isManifest(elem: any): elem is BossfightManifest {
@@ -75,10 +75,10 @@ export class BossfightDataService {
 
         const bossfights = structuredClone(raw);
         return bossfights
-          .filter(e => !!e && !e.isVariant)
+          .filter((e) => !!e && !e.isVariant)
           .map((bossfight) => processRawBossfight(bossfight, bossfights));
       },
-      defaultValue: null
+      defaultValue: null,
     },
   );
   private readonly _rawArray: WritableSignal<BossfightMetadata[] | undefined> = signal(undefined);

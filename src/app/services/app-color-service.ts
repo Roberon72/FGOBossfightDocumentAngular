@@ -8,9 +8,19 @@ import {
 } from '@material/material-color-utilities';
 import { Nullable } from '../app';
 
+export type ThemeInfo = {
+  hexColor: string | null;
+  inverted: boolean;
+};
+
+export const DEFAULT_THEME_INFO: ThemeInfo = {
+  hexColor: null,
+  inverted: false,
+} as const;
+
 const DEFAULT_SCHEME_OPTIONS = {
+  variant: Variant.CONTENT,
   contrastLevel: 5,
-  variant: Variant.VIBRANT,
   platform: 'phone',
   specVersion: '2025',
 } as const;
@@ -22,15 +32,18 @@ export class AppColorService {
   private appDocument = inject(DOCUMENT);
   private stylesheet = new CSSStyleSheet();
 
-  private sourceColor = signal<string | null>(null); //TODO: set back to null
+  private themeInfo = signal<ThemeInfo>(DEFAULT_THEME_INFO);
+
   private hct = computed<Nullable<Hct>>(() => {
-    const color = this.sourceColor();
+    const color = this.themeInfo().hexColor;
     if (!color) return null;
     return Hct.fromInt(argbFromHex(color));
   });
 
   private updateStylesheet = effect(() => {
-    if (!this.sourceColor()) {
+    const { hexColor, inverted } = this.themeInfo();
+
+    if (!hexColor) {
       this.stylesheet.replaceSync('');
       return;
     }
@@ -38,16 +51,17 @@ export class AppColorService {
     const lightScheme = new DynamicScheme({
       ...DEFAULT_SCHEME_OPTIONS,
       sourceColorHct: this.hct()!,
-      isDark: false,
+      isDark: inverted,
     } as any); //They don't export DynamicSchemeOptions, so this has to be any...
 
     const darkScheme = new DynamicScheme({
       ...DEFAULT_SCHEME_OPTIONS,
       sourceColorHct: this.hct()!,
-      isDark: true,
+      isDark: !inverted,
     } as any); //They don't export DynamicSchemeOptions so this has to be any...
 
     const cssContent = this.assembleCSSContent(lightScheme, darkScheme);
+
     this.stylesheet.replaceSync(cssContent);
   });
 
@@ -79,7 +93,11 @@ export class AppColorService {
   }
 
   public updateColor(hexString: string | null) {
-    this.sourceColor.set(hexString);
+    this.themeInfo.update((theme) => ({ ...theme, hexString }));
+  }
+
+  public updateTheme({ hexColor, inverted }: ThemeInfo) {
+    this.themeInfo.set({ hexColor, inverted });
   }
 }
 
