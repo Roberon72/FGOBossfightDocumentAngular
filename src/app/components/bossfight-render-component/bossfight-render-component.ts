@@ -1,12 +1,16 @@
-import { Component, computed, effect, inject, input, linkedSignal, resource, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal, resource } from '@angular/core';
 import { BossfightRecord } from '../../services/bossfight-data-service';
-import { BossfightDocumentProcessorService, } from '../../services/bossfight-document-processor-service';
+import { BossfightDocumentProcessorService } from '../../services/bossfight-document-processor-service';
 import { MatDivider } from '@angular/material/list';
-import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import {
+  MatAccordion,
+  MatExpansionPanel,
+  MatExpansionPanelHeader,
+  MatExpansionPanelTitle,
+} from '@angular/material/expansion';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { ReadState, UserDataService } from '../../services/user-data-service';
 import deepEqualCheck from 'deep-equal-check';
-
 
 @Component({
   selector: 'bossfight-render-component',
@@ -30,15 +34,15 @@ export class BossfightRenderComponent {
   bossfightDocumentRecord = input.required<BossfightRecord>({ alias: 'documentRecord' });
 
   protected bossfightMarkdown = resource({
-    params: () => ({ documentUrl: this.bossfightDocumentRecord().path }),
+    params: () => ({
+      documentUrl: `${this.bossfightDocumentRecord().path}?${new Date().getTime()}`,
+    }),
     loader: ({ params: { documentUrl } }) => fetch(documentUrl).then((r) => r.text()),
     defaultValue: '# Loading...',
   });
 
   protected blocks = computed(() =>
-    this.bossfightDocumentProcessor.parseMarkdownDocument(
-      this.bossfightMarkdown.value(),
-    ),
+    this.bossfightDocumentProcessor.parseMarkdownDocument(this.bossfightMarkdown.value()),
   );
   protected expandedNodes = linkedSignal({
     source: this.userData,
@@ -55,7 +59,7 @@ export class BossfightRenderComponent {
       });
 
       return result;
-    }
+    },
   });
 
   protected completedArrows = linkedSignal({
@@ -103,7 +107,7 @@ export class BossfightRenderComponent {
 
     //TODO: Low-key I might import lodash just for this...
     // Alternatively, is there a deep-merge in vanilla JS?
-    userData.documentStates ??= {}
+    userData.documentStates ??= {};
     userData.documentStates[documentId] ??= {};
     userData.documentStates[documentId].readStates ??= {};
 
