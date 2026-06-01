@@ -20,7 +20,7 @@ export const DEFAULT_THEME_INFO: ThemeInfo = {
 
 const DEFAULT_SCHEME_OPTIONS = {
   variant: Variant.CONTENT,
-  contrastLevel: 5,
+  contrastLevel: 0,
   platform: 'phone',
   specVersion: '2025',
 } as const;

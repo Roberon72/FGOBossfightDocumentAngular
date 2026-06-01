@@ -2,10 +2,86 @@
   display: grid;
   grid-template-columns: minmax(600px, 1fr);
   justify-content: center;
+  overflow-anchor: none;
+  container: content size;
 
-  .inline-html {
+  &:has(.doc-header) .inline-html {
+    display: contents;
+
+    & > * {
+      justify-self: center;
+      width: fit-content;
+    }
+  }
+
+  &:not(&:has(.doc-header)) .inline-html {
+    display: block;
     width: fit-content;
     justify-self: center;
+  }
+
+  ::ng-deep {
+    &:has(.doc-header) {
+      .inline-html {
+        display: block;
+
+        justify-self: center;
+      }
+    }
+
+
+    .doc-header {
+      position: sticky;
+      top: var(--mat-toolbar-standard-height);
+      z-index: 1;
+      background-color: transparent;
+      justify-self: stretch;
+      animation: doc-header-expand linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 1px;
+
+      .title-wrapper {
+        display: grid;
+        justify-items: center;
+        justify-self: center;
+        width: 100%;
+
+        margin-block: 12px;
+        margin-inline: 0;
+
+        background-color: var(--mat-sys-secondary-container);
+        border-radius: var(--mat-sys-corner-large);
+        animation: doc-header-shadow linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 1px;
+
+        & > h1:first-of-type {
+          font: var(--mat-sys-display-small)
+        }
+
+        & > p:first-of-type {
+          font: var(--mat-sys-headline-small)
+        }
+      }
+
+      h1 {
+        animation: doc-header-h1-shrink linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 150px;
+      }
+
+      p {
+        animation: doc-header-p-shrink linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 150px;
+      }
+
+      img {
+        animation: doc-header-img-shrink linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 150px;
+      }
+    }
   }
 
   h1, h2, h3, h4, h5 {
@@ -32,3 +108,59 @@
     }
   }
 }
+
+::ng-deep {
+  @keyframes doc-header-expand {
+    from {
+      width: 100%;
+      margin-inline: 0;
+    }
+    to {
+      width: calc(100% + 16px);
+      margin-inline: -8px;
+    }
+  }
+
+  @keyframes doc-header-shadow {
+    from {
+      box-shadow: none;
+      border-radius: var(--mat-sys-corner-large);
+    }
+    to {
+      box-shadow: var(--mat-sys-level2);
+      border-radius: 0 0 var(--mat-sys-corner-large) var(--mat-sys-corner-large);
+    }
+  }
+
+  @keyframes doc-header-h1-shrink {
+    from {
+      font-size: var(--mat-sys-display-small-size);
+      line-height: var(--mat-sys-display-small-line-height);
+    }
+    to {
+      font-size: var(--mat-sys-headline-small-size);
+      line-height: var(--mat-sys-headline-small-line-height);
+    }
+  }
+
+  @keyframes doc-header-p-shrink {
+    from {
+      font-size: var(--mat-sys-headline-small-size);
+      line-height: var(--mat-sys-headline-small-line-height);
+    }
+    to {
+      font-size: var(--mat-sys-title-small-size);
+      line-height: var(--mat-sys-title-small-line-height);
+    }
+  }
+
+  @keyframes doc-header-img-shrink {
+    from {
+      max-height: 134px;
+    }
+    to {
+      max-height: 67px;
+    }
+  }
+}
+

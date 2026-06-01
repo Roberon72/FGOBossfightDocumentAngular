@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { marked, Tokens, TokensList } from 'marked';
+import { marked, Token, Tokens } from 'marked';
 
 export interface ListItem {
   id: string;
@@ -24,7 +24,7 @@ export class BossfightDocumentProcessorService {
   private readonly SPOILER_PATTERN = /\|\|(.+?)\|\|/g;
 
   parseMarkdownDocument(markdown: string): Block[] {
-    const tokens = marked.lexer(markdown);
+    const tokens = this.mergeUnclosedHtmlBlocks([...marked.lexer(markdown)]);
     const blocks: Block[] = [];
     let lastHeadingText = '';
 
@@ -38,14 +38,14 @@ export class BossfightDocumentProcessorService {
             type: 'heading',
             level: h.depth,
             html: marked.parseInline(rawWithoutHash) as string,
-            plainText: h.text
+            plainText: h.text,
           });
           break;
         }
         case 'html': {
           blocks.push({
             type: 'inline-html',
-            html: token.raw
+            html: token.raw,
           });
           break;
         }
@@ -62,7 +62,7 @@ export class BossfightDocumentProcessorService {
           const p = token as Tokens.Paragraph;
           blocks.push({
             type: 'paragraph',
-            html: marked.parseInline(p.raw) as string
+            html: marked.parseInline(p.raw) as string,
           });
           break;
         }
@@ -78,14 +78,59 @@ export class BossfightDocumentProcessorService {
     return blocks;
   }
 
+  private mergeUnclosedHtmlBlocks(tokens: Token[]): Token[] {
+    const result: Token[] = [];
+    let i = 0;
+    while (i < tokens.length) {
+      const token = tokens[i];
+      if (token.type === 'html' && this.countDivDepth(token.raw) > 0) {
+        let mergedHtml = token.raw;
+        let depth = this.countDivDepth(token.raw);
+        i++;
+        while (i < tokens.length && depth > 0) {
+          const next = tokens[i];
+          mergedHtml += this.tokenToHtml(next);
+          depth += this.countDivDepth(next.raw ?? '');
+          i++;
+        }
+        result.push({ type: 'html', raw: mergedHtml, pre: false, text: mergedHtml } as Tokens.HTML);
+      } else {
+        result.push(token);
+        i++;
+      }
+    }
+    return result;
+  }
+
+  private tokenToHtml(token: Token): string {
+    switch (token.type) {
+      case 'heading': {
+        const h = token as Tokens.Heading;
+        return `<h${h.depth}>${marked.parseInline(h.text) as string}</h${h.depth}>\n`;
+      }
+      case 'paragraph': {
+        const p = token as Tokens.Paragraph;
+        return `<p>${marked.parseInline(p.text) as string}</p>\n`;
+      }
+      default:
+        return token.raw ?? '';
+    }
+  }
+
+  private countDivDepth(html: string): number {
+    const opens = (html.match(/<div\b[^>]*>/gi) ?? []).length;
+    const closes = (html.match(/<\/div>/gi) ?? []).length;
+    return opens - closes;
+  }
+
   private getRawText(item: Tokens.ListItem): string {
-    return item.tokens ? item.tokens.map(t => t.raw).join('') : item.raw || '';
+    return item.tokens ? item.tokens.map((t) => t.raw).join('') : item.raw || '';
   }
 
   private parseListItem(raw: string, heading: string, index: number): ListItem {
     const spoilers: string[] = [];
     const matches = raw.matchAll(this.SPOILER_PATTERN);
-    for (const m of matches) spoilers.push(m[1].replaceAll("`", "").trim());
+    for (const m of matches) spoilers.push(m[1].replaceAll('`', '').trim());
 
     let cleanText = raw.replace(this.SPOILER_PATTERN, '').trim();
     cleanText = cleanText.replace(/\s+/g, ' ').trim();
@@ -101,7 +146,7 @@ export class BossfightDocumentProcessorService {
   private hash(str: string): string {
     let hash = 5381;
     for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) + hash) + str.charCodeAt(i);
+      hash = (hash << 5) + hash + str.charCodeAt(i);
       hash = hash & hash;
     }
     return Math.abs(hash).toString(36).padStart(6, '0');

@@ -1,4 +1,4 @@
-import { readdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import matter from 'gray-matter';
 
 const dir = 'raw_bossfights';
@@ -22,7 +22,8 @@ const markdownFiles = readdirSync(dir)
     }
 
     if (!metadata['title']) {
-      metadata['title'] = content.split('\n')[0]?.replace('# ', '');
+      const titleLine = content.split('\n').find((line) => line.startsWith('# '));
+      metadata['title'] = titleLine?.replace('# ', '');
     }
     const publicPath = `${publicDir}/${file}`;
     writeFileSync(publicPath, content);
